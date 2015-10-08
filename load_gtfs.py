@@ -15,10 +15,11 @@ def is_numeric(s):
         return True
 
 def main():
+    
     conn = MySQLdb.connect (host=settings.MYSQL_HOST, user=settings.MYSQL_USER, passwd=settings.MYSQL_PASSWORD, db=settings.MYSQL_DATABASE)
     cursor = conn.cursor()
-    
-    TABLES = ['agency', 'calendar', 'calendar_dates', 'routes', 'stops', 'stop_times', 'trips']
+
+    TABLES = ['agency', 'calendar', 'calendar_dates', 'fare_attributes','fare_rules','routes','shapes', 'stops', 'stop_times', 'trips']
 
     for table in TABLES:
         print 'processing %s' % table
@@ -28,14 +29,15 @@ def main():
         for row in reader:
             insert_row = []
             for value in row:
-                if not is_numeric(value):
+                if not is_numeric(value) or value.find('E') != -1:
                     insert_row.append('"' + MySQLdb.escape_string(value) + '"')
                 else:
                     insert_row.append(value)
                     
-            insert_sql = "INSERT INTO %s (%s) VALUES (%s);" % (table, ','.join(columns), ','.join(insert_row))        
+            insert_sql = "INSERT INTO %s (%s) VALUES (%s);" % (table, ','.join(columns), ','.join(insert_row))  
             cursor.execute(insert_sql)
-
+        
+        conn.commit()
     cursor.close ()
     conn.close ()
 
