@@ -16,7 +16,7 @@ _DEF_VAL = {
 class Config(object):
     DEFAULTS = _DEF_VAL
 
-    DEBUG = os.environ.get('DEBUG', True)
+    DEBUG = bool(os.environ.get('DEBUG', None))
 
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT') is not None
 
