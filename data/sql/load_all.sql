@@ -8,17 +8,17 @@ cat load_all.sql | mysql -u root
 
 */
 
--- DROP TABLE IF EXISTS agency;
+-- DROP TABLE IF EXISTS agency
 
 -- CREATE TABLE `agency` (
 --     agency_id int(11) PRIMARY KEY,
 --     agency_name VARCHAR(255),
 --     agency_url VARCHAR(255),
 --     agency_timezone VARCHAR(50)
--- );
+-- )
 
 
--- DROP TABLE IF EXISTS routes;
+-- DROP TABLE IF EXISTS routes
 
 -- CREATE TABLE `routes` (
 --     route_id INT(11) PRIMARY KEY,
@@ -28,9 +28,9 @@ cat load_all.sql | mysql -u root
 -- 	route_type INT(2),
 -- 	KEY `agency_id` (agency_id),
 -- 	KEY `route_type` (route_type)
--- );
+-- )
 
--- DROP TABLE IF EXISTS stop_times;
+-- DROP TABLE IF EXISTS stop_times
 
 -- CREATE TABLE `stop_times` (
 --     trip_id INT(11),
@@ -45,9 +45,9 @@ cat load_all.sql | mysql -u root
 -- 	KEY `stop_sequence` (stop_sequence),
 -- 	KEY `pickup_type` (pickup_type),
 -- 	KEY `drop_off_type` (drop_off_type)
--- );
+-- )
 
--- DROP TABLE IF EXISTS stops;
+-- DROP TABLE IF EXISTS stops
 
 -- CREATE TABLE `stops` (
 --     stop_id INT(11) PRIMARY KEY,
@@ -76,12 +76,15 @@ cat load_all.sql | mysql -u root
 -- 	KEY `block_id` (block_id)
 -- );
 
-.IMPORT 'agency.txt' agency;
 
-.IMPORT 'routes.txt' routes;
+.mode csv
 
-.IMPORT 'stop_times.txt' stop_times;
+.import 'data/sample-gtfs-feed/agency.txt' agency
 
-.IMPORT 'stops.txt' stops;
+.import 'data/sample-gtfs-feed/routes.txt' routes
 
-.IMPORT 'trips.txt' trips;
+.import 'data/sample-gtfs-feed/stop_times.txt' stop_times
+
+.import 'data/sample-gtfs-feed/stops.txt' stops
+
+.import 'data/sample-gtfs-feed/trips.txt' trips
