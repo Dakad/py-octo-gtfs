@@ -1,46 +1,25 @@
-#!/bin/python
 
 import csv
-import MySQLdb
-import settings
 
-def is_numeric(s):
-    try:
-      i = float(s)
-    except ValueError:
-        # not numeric
-        return False
-    else:
-        # numeric
-        return True
 
-def main():
-    
-    conn = MySQLdb.connect (host=settings.MYSQL_HOST, user=settings.MYSQL_USER, passwd=settings.MYSQL_PASSWORD, db=settings.MYSQL_DATABASE)
-    cursor = conn.cursor()
+from config import Config
 
-    TABLES = ['agency', 'calendar', 'calendar_dates', 'fare_attributes','fare_rules','routes','shapes', 'stops', 'stop_times', 'trips']
 
-    for table in TABLES:
-        print('processing %s' % table)
-        f = open('gtfs/%s.txt' % table, 'r')
-        reader = csv.reader(f)
-        columns = next(reader)
-        for row in reader:
-            insert_row = []
-            for value in row:
-                if not is_numeric(value) or value.find('E') != -1:
-                    insert_row.append('"' + MySQLdb.escape_string(value) + '"')
-                else:
-                    insert_row.append(value)
-                    
-            insert_sql = "INSERT INTO %s (%s) VALUES (%s);" % (table, ','.join(columns), ','.join(insert_row))  
-            cursor.execute(insert_sql)
-        
-        conn.commit()
-    cursor.close ()
-    conn.close ()
+def _read_gtfs_feed(feed_file_name):
+    with open(feed_file_name, "r") as gtfs:
+        gtfs_reader = csv.reader(gtfs)
+        head = next(gtfs_reader)
 
-    
+        for row in gtfs_reader:
+            new_line = dict(zip(head, row))
+            new_line = dict((k, v)
+                            for k, v in new_line.items() if v != '')
+            yield new_line
+
+
+def run():
+    pass
+
+
 if __name__ == '__main__':
-    main()
+    run()
