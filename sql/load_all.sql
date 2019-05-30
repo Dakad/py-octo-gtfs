@@ -3,7 +3,7 @@
 Script contributed by Michael Perkins
 
 example usage:
-cat load.sql | mysql -u root
+cat load_all.sql | mysql -u root
 (assumes user is in same directory as GTFS source files)
 
 */
