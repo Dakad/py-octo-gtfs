@@ -73,6 +73,13 @@ class Trip(Base):
     block_id = Column(Integer)
 
 
+def list_gtfs_model_tablenames():
+    return [
+        (getattr(c, '__tablename__', None), getattr(c, '__plural_name__', None))
+        for c in Base._decl_class_registry.values()
+    ]
+
+
 def get_class_by_gtfs_filename(filename):
     """Return class reference mapped to table.
 
