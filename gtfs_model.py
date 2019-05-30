@@ -10,7 +10,7 @@ Base = declarative_base()
 class Agency(Base):
 
     __tablename__ = "agency"
-    __plural_name__ = "agencies"
+    __plural_name__ = "agency"
 
     id = Column(Integer, primary_key=True)
     agency_id = Column(Integer, index=True)
@@ -71,6 +71,24 @@ class Trip(Base):
     trip_headsign = Column(String(255), index=True)
     direction_id = Column(Integer)
     block_id = Column(Integer)
+
+
+def get_class_by_gtfs_filename(filename):
+    """Return class reference mapped to table.
+
+    :param tablename: String with name of table.
+    :return: Class reference or None.
+    """
+    for c in Base._decl_class_registry.values():
+        match_tablename = hasattr(
+            c, '__tablename__') and filename == c.__tablename__
+
+        match_plural_name = hasattr(
+            c, '__plural_name__') and filename == c.__plural_name__
+
+        if match_tablename or match_plural_name:
+            return c
+    return None
 
 
 def init(db_uri, echo=False):
