@@ -22,10 +22,10 @@ def main():
     TABLES = ['agency', 'calendar', 'calendar_dates', 'fare_attributes','fare_rules','routes','shapes', 'stops', 'stop_times', 'trips']
 
     for table in TABLES:
-        print 'processing %s' % table
+        print('processing %s' % table)
         f = open('gtfs/%s.txt' % table, 'r')
         reader = csv.reader(f)
-        columns = reader.next()
+        columns = next(reader)
         for row in reader:
             insert_row = []
             for value in row:
