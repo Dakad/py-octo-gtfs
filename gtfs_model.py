@@ -96,7 +96,7 @@ def init(db_uri, echo=False):
     db_engine = sqlalchemy.create_engine(db_uri, echo=echo)
     Base.metadata.create_all(db_engine)
     SessionMaker = sqlalchemy.orm.sessionmaker(bind=db_engine)
-    return SessionMaker
+    return SessionMaker()
 
 
 if __name__ == "__main__":
