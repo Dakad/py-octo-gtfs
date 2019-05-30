@@ -7,7 +7,7 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(base_dir, '.env'))
 
 _DEF_VAL = {
-    'LOCAL_DB': 'sqlite:///' + os.path.join(base_dir, 'data', 'gtfs.db'),
+    'LOCAL_DB': os.path.join(base_dir, 'data', 'gtfs.db'),
     'LOG_DIR': os.path.join(base_dir, 'logs'),
     "GTFS_DIR": os.path.join(base_dir, 'data', 'gtfs'),
 }
@@ -23,4 +23,5 @@ class Config(object):
     LOG_DIR = os.environ.get('LOG_DIR', _DEF_VAL['LOG_DIR'])
     GTFS_DIR = os.environ.get('GTFS_DIR', _DEF_VAL['GTFS_DIR'])
 
-    DB_URI = os.environ.get('DB_URI', _DEF_VAL['LOCAL_DB'])
+    DB_URI = 'sqlite:///' + \
+        os.path.abspath(os.environ.get('DB_DIR', _DEF_VAL['LOCAL_DB']))
