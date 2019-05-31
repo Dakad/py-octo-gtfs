@@ -22,7 +22,7 @@ def _read_gtfs_feed(feed_file_name):
 
 
 def run():
-
+    LIMIT_BEFORE_COMMIT = 151
     DbSession = db_init(Config.DB_URI, Config.DEBUG)
 
     model_tablenames = list_gtfs_model_tablenames()
@@ -37,23 +37,35 @@ def run():
         if(GTFSModel == None):
             continue
 
+        # The GTFS feeds can be huuge, thus contains plenty of lines
+        # At the date of this script : May 31th 2019
+        #   The stop_time.txt has :
+        #       size: 158.1 Mb     # Lines: 3,332,540
+        #   The trips.txt has :
+        #       size: 10 Mb        # Lines: 154,883
+        # Reduce the number of commits- to exec by increasing the number of
+        # INSERT statements to hold before  commit
+
+        if filename == 'trips':
+            limit = LIMIT_BEFORE_COMMIT * 10  # 1510
+        elif filename == 'stop_times':
+            limit = LIMIT_BEFORE_COMMIT ** 2  # 151²
+        else:
+            limit = LIMIT_BEFORE_COMMIT
+
+        # TODO Threadify the reading and insert gtfs feed to reduce the app running time
+
         feed_filename = os.path.join(Config.GTFS_DIR, gtfs_filename)
 
         for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
             gtfs_feed = GTFSModel(**feed)
             DbSession.add(gtfs_feed)
 
-            if counter % 5 == 0:
+            if counter % limit == 0:
                 DbSession.commit()
 
         if DbSession.is_active:
             DbSession.commit()
-
-    # TODO Insert each line
-    # TODO Bulk add_all into the session
-    # TODO Commit on each 50 % read
-
-    pass
 
 
 if __name__ == '__main__':
