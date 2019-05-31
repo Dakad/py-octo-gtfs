@@ -58,6 +58,21 @@ def run():
         feed_filename = os.path.join(Config.GTFS_DIR, gtfs_filename)
 
         for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
+
+            if filename == 'stop_times':
+                q = DbSession.query(GTFSModel).filter_by(
+                    trip_id=feed['trip_id'],
+                    stop_id=feed['stop_id'])
+
+                exists = DbSession.query(
+                    GTFSModel.id).filter(q.exists()).scalar()
+                print(exists)
+                if not exists:
+                    gtfs_feed = GTFSModel(**feed)
+                    DbSession.add(gtfs_feed)
+                    DbSession.commit()
+                continue
+
             gtfs_feed = GTFSModel(**feed)
             DbSession.add(gtfs_feed)
 
@@ -70,3 +85,4 @@ def run():
 
 if __name__ == '__main__':
     run()
+    print("Done")
