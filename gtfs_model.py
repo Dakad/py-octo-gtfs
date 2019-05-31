@@ -119,6 +119,7 @@ def init(db_uri, echo=False):
 
 @event.listens_for(Engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):
+    # Reference : https://stackoverflow.com/a/24393355
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA max_page_count = 2147483646;")
     cursor.close()
