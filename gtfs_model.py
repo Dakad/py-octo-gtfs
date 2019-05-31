@@ -74,6 +74,7 @@ class Trip(Base):
     trip_headsign = Column(String(255), index=True)
     direction_id = Column(Integer)
     block_id = Column(Integer)
+    shape_id = Column(String(10))
 
 
 class Translation(Base):
@@ -82,7 +83,7 @@ class Translation(Base):
 
     id = Column(Integer, primary_key=True)
     trans_id = Column(String(100))
-    stop_name = Column(String(100), index=True)
+    translation = Column(String(100), index=True)
     lang = Column(String(5))
 
 
