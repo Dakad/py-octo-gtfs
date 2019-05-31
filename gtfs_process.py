@@ -49,19 +49,7 @@ class TaskQueue(Queue):
                 self.task_done()
 
 
-def _read_gtfs_feed(feed_file_name):
-    with open(feed_file_name, "r") as gtfs_file:
-        gtfs_reader = csv.reader(gtfs_file)
-        head = next(gtfs_reader)
-
-        for row in gtfs_reader:
-            new_line = dict(zip(head, row))
-            new_line = dict((k, v)
-                            for k, v in new_line.items() if v != '')
-            yield new_line
-
-
-def process_gtfs_feed(feed_filename, model, Session, limit=0):
+def insert_gtfs_feed(feed_filename, model, Session, limit=0):
     # import random
 
     # rand = random.randint(3,15)
@@ -103,3 +91,15 @@ def process_gtfs_feed(feed_filename, model, Session, limit=0):
         db_lock.release()
 
     Session.remove()
+
+
+def _read_gtfs_feed(feed_file_name):
+    with open(feed_file_name, "r") as gtfs_file:
+        gtfs_reader = csv.reader(gtfs_file)
+        head = next(gtfs_reader)
+
+        for row in gtfs_reader:
+            new_line = dict(zip(head, row))
+            new_line = dict((k, v)
+                            for k, v in new_line.items() if v != '')
+            yield new_line
