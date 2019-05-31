@@ -2,7 +2,7 @@ from sqlalchemy import Column, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Unicode, Integer, TIMESTAMP, String
-from sqlalchemy.orm import relationship, backref, validates, synonym
+from sqlalchemy.orm import synonym, scoped_session, sessionmaker
 import sqlalchemy
 
 Base = declarative_base()
@@ -114,13 +114,14 @@ def init(db_uri, echo=False):
     print(db_uri)
     db_engine = sqlalchemy.create_engine(db_uri, echo=echo)
     Base.metadata.create_all(db_engine)
-    SessionMaker = sqlalchemy.orm.sessionmaker(bind=db_engine)
-    return SessionMaker()
+    SessionMaker = sessionmaker(bind=db_engine)
+    return scoped_session(SessionMaker)
 
 
 @event.listens_for(Engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):
     # Reference : https://stackoverflow.com/a/24393355
+    print("Yep")
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA max_page_count = 2147483646;")
     cursor.close()

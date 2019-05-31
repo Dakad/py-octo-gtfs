@@ -23,5 +23,7 @@ class Config(object):
     LOG_DIR = os.environ.get('LOG_DIR', _DEF_VAL['LOG_DIR'])
     GTFS_DIR = os.environ.get('GTFS_DIR', _DEF_VAL['GTFS_DIR'])
 
+    DB_DIR = os.environ.get('DB_DIR', _DEF_VAL['LOCAL_DB'])
+
     DB_URI = 'sqlite:///' + \
         os.path.abspath(os.environ.get('DB_DIR', _DEF_VAL['LOCAL_DB']))
