@@ -11,7 +11,6 @@ Base = declarative_base()
 class Agency(Base):
 
     __tablename__ = "agency"
-    __plural_name__ = "agency"
 
     id = Column(Integer, primary_key=True)
     agency_id = Column(Integer, index=True)
@@ -24,8 +23,7 @@ class Agency(Base):
 
 class Route(Base):
 
-    __tablename__ = "route"
-    __plural_name__ = "routes"
+    __tablename__ = "routes"
 
     id = Column(Integer, primary_key=True)
     route_id = Column(Integer, index=True)
@@ -39,8 +37,7 @@ class Route(Base):
 
 class StopTime(Base):
 
-    __tablename__ = "stop_time"
-    __plural_name__ = "stop_times"
+    __tablename__ = "stop_times"
 
     id = Column(Integer, primary_key=True)
     trip_id = Column(Integer, index=True)
@@ -54,8 +51,7 @@ class StopTime(Base):
 
 class Stop(Base):
 
-    __tablename__ = "stop"
-    __plural_name__ = "stops"
+    __tablename__ = "stops"
 
     id = Column(Integer, primary_key=True)
     stop_id = Column(String(10), index=True)
@@ -69,8 +65,7 @@ class Stop(Base):
 
 class Trip(Base):
 
-    __tablename__ = "trip"
-    __plural_name__ = "trips"
+    __tablename__ = "trips"
 
     id = Column(Integer, primary_key=True)
     trip_id = Column(Integer, index=True)
@@ -83,8 +78,7 @@ class Trip(Base):
 
 class Translation(Base):
 
-    __tablename__ = "translation"
-    __plural_name__ = "translations"
+    __tablename__ = "translations"
 
     id = Column(Integer, primary_key=True)
     trans_id = Column(String(100))
@@ -94,8 +88,9 @@ class Translation(Base):
 
 def list_gtfs_model_tablenames():
     return [
-        (getattr(c, '__tablename__', None), getattr(c, '__plural_name__', None))
+        getattr(c, '__tablename__', None)
         for c in Base._decl_class_registry.values()
+        if hasattr(c, '__tablename__')
     ]
 
 
@@ -109,10 +104,7 @@ def get_class_by_gtfs_filename(filename):
         match_tablename = hasattr(
             c, '__tablename__') and filename == c.__tablename__
 
-        match_plural_name = hasattr(
-            c, '__plural_name__') and filename == c.__plural_name__
-
-        if match_tablename or match_plural_name:
+        if match_tablename:
             return c
     return None
 
@@ -126,7 +118,7 @@ def init(db_uri, echo=False):
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def _set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA max_page_count = 2147483646;")
     cursor.close()
