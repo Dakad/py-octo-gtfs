@@ -21,6 +21,30 @@ def _read_gtfs_feed(feed_file_name):
             yield new_line
 
 
+def process_gtfs_feed(feed_filename, model, session, limit=0):
+    for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
+
+        if 'stop_times' in feed_filename:
+            q = session.query(model).filter_by(
+                trip_id=feed['trip_id'],
+                stop_id=feed['stop_id'])
+
+            exists = session.query(
+                model.id).filter(q.exists()).scalar()
+            print(exists)
+            if not exists:
+                gtfs_feed = model(**feed)
+                session.add(gtfs_feed)
+                session.commit()
+            continue
+
+        gtfs_feed = model(**feed)
+        session.add(gtfs_feed)
+
+        if counter % limit == 0:
+            session.commit()
+
+
 def run():
     LIMIT_BEFORE_COMMIT = 151
     DbSession = db_init(Config.DB_URI, Config.DEBUG)
@@ -57,27 +81,7 @@ def run():
 
         feed_filename = os.path.join(Config.GTFS_DIR, gtfs_filename)
 
-        for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
-
-            if filename == 'stop_times':
-                q = DbSession.query(GTFSModel).filter_by(
-                    trip_id=feed['trip_id'],
-                    stop_id=feed['stop_id'])
-
-                exists = DbSession.query(
-                    GTFSModel.id).filter(q.exists()).scalar()
-                print(exists)
-                if not exists:
-                    gtfs_feed = GTFSModel(**feed)
-                    DbSession.add(gtfs_feed)
-                    DbSession.commit()
-                continue
-
-            gtfs_feed = GTFSModel(**feed)
-            DbSession.add(gtfs_feed)
-
-            if counter % limit == 0:
-                DbSession.commit()
+        process_gtfs_feed(feed_filename, GTFSModel, DbSession, limit)
 
         if DbSession.is_active:
             DbSession.commit()
