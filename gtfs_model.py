@@ -81,6 +81,17 @@ class Trip(Base):
     block_id = Column(Integer)
 
 
+class Translation(Base):
+
+    __tablename__ = "translation"
+    __plural_name__ = "translations"
+
+    id = Column(Integer, primary_key=True)
+    trans_id = Column(String(100))
+    stop_name = Column(String(100), index=True)
+    lang = Column(String(5))
+
+
 def list_gtfs_model_tablenames():
     return [
         (getattr(c, '__tablename__', None), getattr(c, '__plural_name__', None))
