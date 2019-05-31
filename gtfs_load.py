@@ -5,10 +5,32 @@ from config import Config
 from gtfs_model import init as db_init
 from gtfs_model import get_class_by_gtfs_filename
 from gtfs_model import list_gtfs_model_tablenames
-from gtfs_process import TaskQueue, process_gtfs_feed
+import gtfs_import
 
 
-def run():
+def run(by_import=False):
+
+    if by_import is True:
+        tablenames_by_gtfs_file = []
+        model_tablenames = list_gtfs_model_tablenames()
+        gtfs_filenames = os.listdir(Config.GTFS_DIR)
+
+        for model in model_tablenames:
+            def match(file_name): return model in file_name
+
+            found = next(filter(match, gtfs_filenames), None)
+            if found:
+                file_full_path = os.path.join(Config.GTFS_DIR, found)
+                tablenames_by_gtfs_file.append((model, file_full_path))
+
+        gtfs_import.run(tablenames_by_gtfs_file)
+    else:
+        _prepare_insert_gtfs_feeds()
+
+
+def _prepare_insert_gtfs_feeds():
+    from gtfs_process import TaskQueue, insert_gtfs_feed
+
     LIMIT_BEFORE_COMMIT = 151
     DbSessionMaker = db_init(Config.DB_URI, Config.DEBUG)
 
@@ -44,16 +66,13 @@ def run():
         feed_filename = os.path.join(Config.GTFS_DIR, gtfs_filename)
 
         # DbSession = DbSessionMaker()
-        tq.add_task(process_gtfs_feed, feed_filename,
+        tq.add_task(insert_gtfs_feed, feed_filename,
                     GTFSModel, DbSessionMaker, limit)
 
-    print("Done 1")
     tq.join()
-    print("Done 2")
-
     return True
 
 
 if __name__ == '__main__':
-    run()
+    run(True)
     print("Done")
