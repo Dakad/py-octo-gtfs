@@ -16,6 +16,8 @@ class Agency(Base):
     agency_id = Column(Integer, index=True)
     agency_name = Column(Unicode(255))
     agency_url = Column(Unicode(255))
+    agency_lang = Column(String(55))
+    agency_phone = Column(String(55))
     agency_timezone = Column(String(50))
 
 
@@ -30,6 +32,8 @@ class Route(Base):
     route_short_name = Column(Unicode(150), index=True)
     route_long_name = Column(Unicode(255), index=True)
     route_type = Column(Integer)
+    route_color = Column(String(10))
+    route_text_color = Column(String(10))
 
 
 class StopTime(Base):
@@ -44,6 +48,7 @@ class StopTime(Base):
     stop_id = Column(Integer)
     stop_sequence = Column(Integer)
     pickup_type = Column(Integer)
+    drop_off_type = Column(Integer)
 
 
 class Stop(Base):
@@ -52,11 +57,13 @@ class Stop(Base):
     __plural_name__ = "stops"
 
     id = Column(Integer, primary_key=True)
-    stop_id = Column(Integer, index=True)
+    stop_id = Column(String(10), index=True)
     stop_name = Column(Unicode(255), index=True)
     stop_desc = Column(Unicode(255))
     stop_lat = Column(String(50))
     stop_lon = Column(String(50))
+    location_type = Column(Integer)
+    parent_station = Column(String(10))
 
 
 class Trip(Base):
