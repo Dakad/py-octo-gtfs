@@ -43,11 +43,13 @@ def run():
 
         feed_filename = os.path.join(Config.GTFS_DIR, gtfs_filename)
 
-        DbSession = DbSessionMaker()
+        # DbSession = DbSessionMaker()
         tq.add_task(process_gtfs_feed, feed_filename,
-                    GTFSModel, DbSession, limit)
+                    GTFSModel, DbSessionMaker, limit)
 
+    print("Done 1")
     tq.join()
+    print("Done 2")
 
     return True
 

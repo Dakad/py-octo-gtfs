@@ -1,9 +1,12 @@
-from threading import Thread
+from threading import Thread, Lock as thread_lock
 from queue import Queue
 import csv
 import time
 
 # Source : https://medium.com/@shashwat_ds/a-tiny-multi-threaded-job-queue-in-30-lines-of-python-a344c3f3f7f0
+
+
+db_lock = thread_lock()
 
 
 class TaskQueue(Queue):
@@ -28,7 +31,7 @@ class TaskQueue(Queue):
     def stop_workers(self):
         self.join()
         for i in range(self.num_worker_threads):
-            self.put(None)
+            self.put(None, [], {})
         for t in TaskQueue.threads:
             t.join()
 
@@ -38,11 +41,11 @@ class TaskQueue(Queue):
         and running it along with its arguments
         """
         while True:
-            task, args, kwargs = self.get()
-            if task is None:
+            exec_task, args, kwargs = self.get()
+            if exec_task is None:
                 break
             else:
-                task(*args, **kwargs)
+                exec_task(*args, **kwargs)
                 self.task_done()
 
 
@@ -58,7 +61,7 @@ def _read_gtfs_feed(feed_file_name):
             yield new_line
 
 
-def process_gtfs_feed(feed_filename, model, session, limit=0):
+def process_gtfs_feed(feed_filename, model, Session, limit=0):
     # import random
 
     # rand = random.randint(3,15)
@@ -67,28 +70,36 @@ def process_gtfs_feed(feed_filename, model, session, limit=0):
     #     print(feed_filename, '\t', 'PROCESS ... ', nb, flush=True)
     #     time.sleep(1)
     # print(feed_filename,'\t',rand,'\t','DONE', flush=True)
-
+    Session(expire_on_commit=False)
     for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
 
-        if 'stop_times' in feed_filename:
-            q = session.query(model).filter_by(
-                trip_id=feed['trip_id'],
-                stop_id=feed['stop_id'])
+        # if 'stop_times' in feed_filename:
+        #     q = session.query(model).filter_by(
+        #         trip_id=feed['trip_id'],
+        #         stop_id=feed['stop_id'])
 
-            exists = session.query(
-                model.id).filter(q.exists()).scalar()
-            print(exists)
-            if not exists:
-                gtfs_feed = model(**feed)
-                session.add(gtfs_feed)
-                session.commit()
-            continue
+        #     exists = session.query(
+        #         model.id).filter(q.exists()).scalar()
+        #     print(exists)
+        #     if not exists:
+        #         gtfs_feed = model(**feed)
+        #         session.add(gtfs_feed)
+        #         session.commit()
+        #     continue
 
         gtfs_feed = model(**feed)
-        session.add(gtfs_feed)
+        Session.add(gtfs_feed)
 
         if counter % limit == 0:
-            session.commit()
+            db_lock.acquire()
+            Session.commit()
+            Session.close()
+            db_lock.release()
 
-    if session.is_active:
-        session.commit()
+    if Session.is_active:
+        db_lock.acquire()
+        Session.commit()
+        Session.close()
+        db_lock.release()
+
+    Session.remove()
