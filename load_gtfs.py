@@ -9,42 +9,6 @@ from gtfs_model import get_class_by_gtfs_filename
 from gtfs_model import list_gtfs_model_tablenames
 
 
-def _read_gtfs_feed(feed_file_name):
-    with open(feed_file_name, "r") as gtfs_file:
-        gtfs_reader = csv.reader(gtfs_file)
-        head = next(gtfs_reader)
-
-        for row in gtfs_reader:
-            new_line = dict(zip(head, row))
-            new_line = dict((k, v)
-                            for k, v in new_line.items() if v != '')
-            yield new_line
-
-
-def process_gtfs_feed(feed_filename, model, session, limit=0):
-    for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
-
-        if 'stop_times' in feed_filename:
-            q = session.query(model).filter_by(
-                trip_id=feed['trip_id'],
-                stop_id=feed['stop_id'])
-
-            exists = session.query(
-                model.id).filter(q.exists()).scalar()
-            print(exists)
-            if not exists:
-                gtfs_feed = model(**feed)
-                session.add(gtfs_feed)
-                session.commit()
-            continue
-
-        gtfs_feed = model(**feed)
-        session.add(gtfs_feed)
-
-        if counter % limit == 0:
-            session.commit()
-
-
 def run():
     LIMIT_BEFORE_COMMIT = 151
     DbSession = db_init(Config.DB_URI, Config.DEBUG)
@@ -85,6 +49,42 @@ def run():
 
         if DbSession.is_active:
             DbSession.commit()
+
+
+def _read_gtfs_feed(feed_file_name):
+    with open(feed_file_name, "r") as gtfs_file:
+        gtfs_reader = csv.reader(gtfs_file)
+        head = next(gtfs_reader)
+
+        for row in gtfs_reader:
+            new_line = dict(zip(head, row))
+            new_line = dict((k, v)
+                            for k, v in new_line.items() if v != '')
+            yield new_line
+
+
+def process_gtfs_feed(feed_filename, model, session, limit=0):
+    for counter, feed in enumerate(_read_gtfs_feed(feed_filename)):
+
+        if 'stop_times' in feed_filename:
+            q = session.query(model).filter_by(
+                trip_id=feed['trip_id'],
+                stop_id=feed['stop_id'])
+
+            exists = session.query(
+                model.id).filter(q.exists()).scalar()
+            print(exists)
+            if not exists:
+                gtfs_feed = model(**feed)
+                session.add(gtfs_feed)
+                session.commit()
+            continue
+
+        gtfs_feed = model(**feed)
+        session.add(gtfs_feed)
+
+        if counter % limit == 0:
+            session.commit()
 
 
 if __name__ == '__main__':
